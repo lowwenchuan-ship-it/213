@@ -851,7 +851,11 @@ document.getElementById('f_photoFile').addEventListener('change', async (e)=>{
     try{
       const dataUrl = await compressImage(file);
       const base64 = dataUrl.split(',')[1];
-      const res = await apiFetch('/photo', { method:'POST', body:{ filename: file.name, mimeType:'image/jpeg', base64 } });
+      const catForUpload = document.getElementById('propId').value
+  ? (properties.find(p=>p.id===document.getElementById('propId').value)||{}).category
+  : currentCategory;
+const unitForUpload = document.getElementById('f_unit').value.trim();
+const res = await apiFetch('/photo', { method:'POST', body:{ filename: file.name, mimeType:'image/jpeg', base64, category: catForUpload, unit: unitForUpload } });
       editingPhotoIds.push(res.fileId);
       photoBlobCache[res.fileId] = dataUrl;
       await renderPhotoThumbs();
