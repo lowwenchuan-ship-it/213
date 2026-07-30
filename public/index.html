@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>房源管理</title>
+<style>
+  :root{
+    --paper:#F6F4EE;
+    --card:#FFFFFF;
+    --ink:#242B24;
+    --ink-soft:#6B7268;
+    --ink-faint:#9CA096;
+    --line:#DEDACC;
+    --accent:#2F5D50;
+    --accent-soft:#E4EEE9;
+    --accent-dark:#1E3F36;
+    --amber:#B9782E;
+    --amber-soft:#F7E9D4;
+    --amber-dark:#7A4E17;
+    --red:#A33B32;
+    --red-soft:#F6E1DD;
+    --red-dark:#6E2721;
+    --green:#3E7A52;
+    --green-soft:#E1EFE3;
+    --green-dark:#245234;
+    --gray-soft:#EDEBE3;
+    --gray-dark:#5B5F55;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(36,43,36,0.06), 0 4px 14px rgba(36,43,36,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 80px;}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{width:40px;height:40px;border-radius:10px;background:var(--accent-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .brand-mark svg{width:20px;height:20px;}
+  h1{font-family:"Songti SC","STSong",Georgia,serif;font-size:24px;font-weight:600;margin:0;letter-spacing:0.5px;color:var(--accent-dark);}
+  .brand p{margin:2px 0 0;font-size:13px;color:var(--ink-soft);}
+  .btn{border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:transform .08s ease, opacity .15s ease;font-family:inherit;}
+  .btn:active{transform:scale(0.97);}
+  .btn:disabled{opacity:0.6;cursor:default;}
+  .btn-primary{background:var(--accent-dark);color:#fff;}
+  .btn-primary:hover{opacity:0.9;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--gray-soft);}
+  .btn-danger-text{background:transparent;color:var(--red-dark);}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
+  .stat-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+  .stat-card .num{font-size:26px;font-weight:700;font-family:"Songti SC",Georgia,serif;}
+  .stat-card .label{font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+  .stat-card.warn .num{color:var(--amber-dark);}
+  .stat-card.rented .num{color:var(--green-dark);}
+  .stat-card.vacant .num{color:var(--red-dark);}
+
+  .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .section-head h2{font-family:"Songti SC",Georgia,serif;font-size:18px;margin:0;color:var(--ink);}
+
+  .category-boxes{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+  .category-box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;cursor:pointer;transition:border-color .12s ease;}
+  .category-box:hover{border-color:var(--accent);}
+  .cb-name{font-family:"Songti SC","STSong",Georgia,serif;font-size:17px;font-weight:600;color:var(--accent-dark);margin-bottom:6px;}
+  .cb-count{font-size:13px;color:var(--ink-soft);margin-bottom:10px;}
+  .cb-breakdown{display:flex;gap:12px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
+  .cb-breakdown .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;}
+  .cb-warn{margin-top:10px;font-size:12px;color:var(--amber-dark);font-weight:600;background:var(--amber-soft);padding:5px 9px;border-radius:7px;display:inline-block;}
+
+  .cat-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .cat-header-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .cat-header h2{font-family:"Songti SC",Georgia,serif;font-size:20px;margin:0;color:var(--accent-dark);}
+  .cat-header-actions{display:flex;gap:8px;}
+  .back-btn{display:inline-flex;align-items:center;gap:4px;background:none;border:none;color:var(--ink-soft);font-size:14px;cursor:pointer;padding:6px 4px;font-family:inherit;}
+  .back-btn:hover{color:var(--accent-dark);}
+
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+  .search-box{flex:1;min-width:200px;position:relative;}
+  .search-box input{width:100%;padding:10px 14px 10px 36px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:14px;font-family:inherit;color:var(--ink);}
+  .search-box input:focus{outline:none;border-color:var(--accent);}
+  .search-box::before{content:"";position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;height:14px;border:2px solid var(--ink-faint);border-radius:50%;}
+  .search-box::after{content:"";position:absolute;left:20px;top:calc(50% + 5px);width:6px;height:2px;background:var(--ink-faint);transform:rotate(45deg);}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;}
+  .filter-chip{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13px;color:var(--ink-soft);cursor:pointer;white-space:nowrap;font-family:inherit;}
+  .filter-chip.active{background:var(--accent-dark);color:#fff;border-color:var(--accent-dark);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);cursor:pointer;overflow:hidden;transition:border-color .12s ease;}
+  .card:hover{border-color:var(--accent);}
+  .card-photo{height:120px;background:var(--gray-soft);display:flex;align-items:center;justify-content:center;background-size:cover;background-position:center;position:relative;}
+  .card-photo svg{width:28px;height:28px;color:var(--ink-faint);}
+  .card-body{padding:14px 16px 16px;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
+  .card-addr{font-size:15px;font-weight:600;color:var(--ink);line-height:1.35;}
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 10px 4px 8px;border-radius:999px;white-space:nowrap;position:relative;flex-shrink:0;}
+  .tag::before{content:"";width:6px;height:6px;border-radius:50%;}
+  .tag.rented{background:var(--green-soft);color:var(--green-dark);}
+  .tag.rented::before{background:var(--green);}
+  .tag.vacant{background:var(--red-soft);color:var(--red-dark);}
+  .tag.vacant::before{background:var(--red);}
+  .tag.maint{background:var(--gray-soft);color:var(--gray-dark);}
+  .tag.maint::before{background:var(--ink-faint);}
+  .card-rent{font-size:14px;color:var(--ink-soft);margin-bottom:8px;}
+  .card-rent b{color:var(--ink);font-size:16px;font-weight:700;}
+  .card-row{font-size:12.5px;color:var(--ink-soft);display:flex;justify-content:space-between;margin-top:4px;}
+  .expiry-pill{margin-top:10px;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .expiry-pill.ok{background:var(--accent-soft);color:var(--accent-dark);}
+  .expiry-pill.soon{background:var(--amber-soft);color:var(--amber-dark);}
+  .expiry-pill.over{background:var(--red-soft);color:var(--red-dark);}
+
+  .empty{text-align:center;padding:70px 20px;color:var(--ink-soft);}
+  .empty h3{font-family:"Songti SC",Georgia,serif;color:var(--ink);font-size:18px;margin-bottom:6px;}
+  .empty p{font-size:13.5px;margin-bottom:18px;}
+
+  .overlay{position:fixed;inset:0;background:rgba(36,43,36,0.45);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:40px 16px;overflow-y:auto;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--card);border-radius:16px;max-width:560px;width:100%;padding:26px 26px 22px;box-shadow:0 20px 50px rgba(0,0,0,0.2);}
+  .modal.small{max-width:420px;}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .modal-head h2{font-family:"Songti SC",Georgia,serif;font-size:19px;margin:0;color:var(--accent-dark);}
+  .close-x{background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:20px;line-height:1;padding:4px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-grid .full{grid-column:1/-1;}
+  label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:5px;font-weight:600;}
+  input,select,textarea{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);font-size:14px;font-family:inherit;color:var(--ink);background:#fff;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);}
+  textarea{resize:vertical;min-height:60px;}
+  .field{margin-bottom:2px;}
+  .category-context{background:var(--accent-soft);color:var(--accent-dark);border-radius:9px;padding:9px 12px;font-size:13.5px;font-weight:600;margin-bottom:14px;}
+  .photo-row{display:flex;gap:8px;margin-top:4px;}
+  .photo-row input{flex:1;}
+  .photo-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .photo-thumb{width:56px;height:56px;border-radius:8px;background-size:cover;background-position:center;position:relative;border:1px solid var(--line);background-color:var(--gray-soft);}
+  .photo-thumb .rm{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red-dark);color:#fff;border:none;font-size:11px;cursor:pointer;line-height:1;}
+  .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:20px;}
+  .modal-actions-right{display:flex;gap:8px;}
+
+  .detail-photos{display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;}
+  .detail-photos img{width:100%;max-width:220px;height:140px;object-fit:cover;border-radius:10px;flex-shrink:0;background:var(--gray-soft);}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;}
+  .detail-item .k{font-size:12px;color:var(--ink-soft);margin-bottom:3px;}
+  .detail-item .v{font-size:14.5px;color:var(--ink);font-weight:600;}
+  .detail-notes{background:var(--gray-soft);border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--ink-soft);margin-top:8px;white-space:pre-wrap;}
+
+  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:300;background:#fff;border-left:4px solid var(--red-dark);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);padding:13px 16px;font-size:13.5px;line-height:1.5;max-width:min(92vw,420px);white-space:pre-wrap;display:flex;align-items:flex-start;gap:10px;color:var(--ink);}
+  .toast.success{border-left-color:var(--green-dark);}
+  .toast.info{border-left-color:var(--accent-dark);}
+  .toast .toast-close{background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:16px;line-height:1;padding:0;flex-shrink:0;}
+
+  .top-actions{display:flex;gap:8px;align-items:center;}
+  .user-pill{font-size:12.5px;color:var(--ink-soft);background:var(--gray-soft);padding:7px 12px;border-radius:999px;}
+
+  /* 登录页 */
+  #loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{background:var(--card);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.12);padding:36px 32px;max-width:360px;width:100%;}
+  .login-card .brand-mark{margin:0 auto 16px;}
+  .login-card h1{text-align:center;margin-bottom:4px;}
+  .login-card p.sub{text-align:center;color:var(--ink-soft);font-size:13px;margin-bottom:22px;}
+  .login-card .field{margin-bottom:14px;}
+  .login-card .btn{width:100%;justify-content:center;margin-top:6px;}
+
+  .users-list{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:12px;}
+  .users-list .u-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13.5px;}
+  .users-list .u-row:last-child{border-bottom:none;}
+  .u-role{font-size:11px;color:var(--ink-soft);background:var(--gray-soft);padding:2px 8px;border-radius:999px;margin-left:8px;}
+
+  @media (max-width:640px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .form-grid{grid-template-columns:1fr;}
+    .detail-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F6F4EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
+    </div>
+    <h1>房源管理</h1>
+    <p class="sub">登录后查看和管理所有房源</p>
+    <form id="loginForm">
+      <div class="field">
+        <label>账号</label>
+        <input type="text" id="loginUsername" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginSubmitBtn">登录</button>
+    </form>
+  </div>
+</div>
+
+<!-- 主应用 -->
+<div id="appView" style="display:none;">
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#F6F4EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>
+      </div>
+      <div>
+        <h1>房源管理</h1>
+        <p id="subtitle">加载中…</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="user-pill" id="userPill"></span>
+      <button class="btn btn-ghost" id="adminBtn" style="display:none;">账号管理</button>
+      <button class="btn btn-ghost" id="logoutBtn">退出登录</button>
+    </div>
+  </header>
+
+  <div id="homeView">
+    <div class="stats">
+      <div class="stat-card"><div class="num" id="statTotal">0</div><div class="label">总房源</div></div>
+      <div class="stat-card rented"><div class="num" id="statRented">0</div><div class="label">已出租</div></div>
+      <div class="stat-card vacant"><div class="num" id="statVacant">0</div><div class="label">空置</div></div>
+      <div class="stat-card warn"><div class="num" id="statExpiring">0</div><div class="label">30天内到期</div></div>
+    </div>
+
+    <div class="section-head">
+      <h2>我的楼盘</h2>
+      <button class="btn btn-primary" id="addCategoryBtn">+ 新增楼盘</button>
+    </div>
+    <div id="categoryBoxes"></div>
+  </div>
+
+  <div id="categoryView" style="display:none;">
+    <button class="back-btn" id="backToHomeBtn">&larr; 返回全部楼盘</button>
+    <div class="cat-header">
+      <div class="cat-header-left"><h2 id="catViewTitle">楼盘</h2></div>
+      <div class="cat-header-actions">
+        <button class="btn btn-ghost" id="renameCategoryBtn">重命名</button>
+        <button class="btn btn-danger-text" id="deleteCategoryBtn">删除楼盘</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card"><div class="num" id="catStatTotal">0</div><div class="label">该楼盘房源</div></div>
+      <div class="stat-card rented"><div class="num" id="catStatRented">0</div><div class="label">已出租</div></div>
+      <div class="stat-card vacant"><div class="num" id="catStatVacant">0</div><div class="label">空置</div></div>
+      <div class="stat-card warn"><div class="num" id="catStatExpiring">0</div><div class="label">30天内到期</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-box"><input type="text" id="searchInput" placeholder="搜索房源编号、业主或租客姓名"></div>
+      <div class="filters" id="filterChips">
+        <button class="filter-chip active" data-filter="all">全部</button>
+        <button class="filter-chip" data-filter="rented">已出租</button>
+        <button class="filter-chip" data-filter="vacant">空置</button>
+        <button class="filter-chip" data-filter="maint">维护中</button>
+        <button class="filter-chip" data-filter="expiring">即将到期</button>
+      </div>
+      <button class="btn btn-primary" id="addBtn">+ 新增房源</button>
+    </div>
+
+    <div id="gridArea"></div>
+  </div>
+</div>
+</div>
+
+<!-- 新增/重命名 楼盘 -->
+<div class="overlay" id="categoryFormOverlay">
+  <div class="modal small">
+    <div class="modal-head"><h2 id="categoryFormTitle">新增楼盘</h2><button class="close-x" id="categoryFormClose">&times;</button></div>
+    <form id="categoryForm">
+      <div class="field"><label>楼盘 / 项目名称</label><input type="text" id="cf_name" placeholder="例如：YOLO公寓"></div>
+      <div class="modal-actions"><div></div>
+        <div class="modal-actions-right">
+          <button type="button" class="btn btn-ghost" id="categoryCancelBtn">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 新增/编辑 房源 -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="modal-head"><h2 id="formTitle">新增房源</h2><button class="close-x" id="formClose">&times;</button></div>
+    <form id="propForm">
+      <input type="hidden" id="propId">
+      <div class="category-context">楼盘：<span id="formCategoryLabel"></span></div>
+      <div class="form-grid">
+        <div class="field"><label>房源编号</label><input type="text" id="f_unit" placeholder="例如：20-07"></div>
+        <div class="field"><label>状态</label>
+          <select id="f_status">
+            <option value="vacant">空置</option>
+            <option value="rented">已出租</option>
+            <option value="maint">维护中</option>
+          </select>
+        </div>
+        <div class="field"><label>业主姓名</label><input type="text" id="f_ownerName"></div>
+        <div class="field"><label>业主电话</label><input type="text" id="f_ownerPhone"></div>
+        <div class="field"><label>月租金（元）</label><input type="number" id="f_rent" min="0"></div>
+        <div class="field"><label>租客姓名</label><input type="text" id="f_tenantName"></div>
+        <div class="field"><label>租客电话</label><input type="text" id="f_tenantPhone"></div>
+        <div id="contractFields" style="display:contents;">
+          <div class="field"><label>结束日期</label><input type="date" id="f_contractEnd"></div>
+        </div>
+        <div class="field full">
+          <label>房屋照片</label>
+          <div class="photo-row">
+            <button type="button" class="btn btn-ghost" id="uploadPhotoBtn">上传照片文件</button>
+            <input type="file" id="f_photoFile" accept="image/*" multiple style="display:none;">
+            <span id="uploadStatus" style="font-size:12px;color:var(--ink-soft);"></span>
+          </div>
+          <div class="photo-thumbs" id="photoThumbs"></div>
+        </div>
+        <div class="field full"><label>备注</label><textarea id="f_notes"></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <div><button type="button" class="btn btn-danger-text" id="deleteBtn" style="display:none;">删除此房源</button></div>
+        <div class="modal-actions-right">
+          <button type="button" class="btn btn-ghost" id="cancelBtn">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 详情 -->
+<div class="overlay" id="detailOverlay">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-head"><h2 id="detailAddr">地址</h2><button class="close-x" id="detailClose">&times;</button></div>
+    <div id="detailPhotos" class="detail-photos"></div>
+    <div class="detail-grid" id="detailGrid"></div>
+    <div id="detailExpiry"></div>
+    <div id="detailNotesWrap"></div>
+    <div class="modal-actions"><div></div>
+      <div class="modal-actions-right"><button type="button" class="btn btn-ghost" id="detailEditBtn">编辑</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal small">
+    <div class="modal-head"><h2>请确认</h2></div>
+    <p id="confirmMessage" style="font-size:14px;color:var(--ink);line-height:1.6;"></p>
+    <div class="modal-actions"><div></div>
+      <div class="modal-actions-right">
+        <button type="button" class="btn btn-ghost" id="confirmCancelBtn">取消</button>
+        <button type="button" class="btn btn-primary" id="confirmOkBtn">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 账号管理 -->
+<div class="overlay" id="adminOverlay">
+  <div class="modal small">
+    <div class="modal-head"><h2>账号管理</h2><button class="close-x" id="adminClose">&times;</button></div>
+    <div id="usersList" class="users-list"></div>
+    <form id="addUserForm" style="margin-top:16px;">
+      <div class="field"><label>新账号</label><input type="text" id="nu_username" required></div>
+      <div class="field" style="margin-top:10px;"><label>密码</label><input type="password" id="nu_password" required></div>
+      <div class="field" style="margin-top:10px;">
+        <label>角色</label>
+        <select id="nu_role"><option value="member">普通成员</option><option value="admin">管理员</option></select>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:14px;">添加账号</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+let token = localStorage.getItem('fy_token') || null;
+let currentUser = null; // {username, role}
+
+let properties = [];
+let categories = [];
+let currentFilter = 'all';
+let currentSearch = '';
+let editingPhotoIds = [];   // 本次表单里的照片 fileId 列表
+let detailViewingId = null;
+let currentCategory = null;
+let categoryModalMode = 'add';
+let categoryModalOldName = null;
+
+const STATUS_LABEL = { rented:'已出租', vacant:'空置', maint:'维护中' };
+const STATUS_CLASS = { rented:'rented', vacant:'vacant', maint:'maint' };
+
+function uid(){ return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const end = new Date(dateStr); end.setHours(0,0,0,0);
+  return Math.round((end - today) / 86400000);
+}
+function fmtMoney(n){ if(n===undefined||n===null||n==='') return '未填写'; return '¥' + Number(n).toLocaleString('zh-CN'); }
+function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function homeIconSvg(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>`; }
+
+function showToast(msg, type, duration){
+  type = type || 'error'; duration = duration || 5000;
+  let el = document.getElementById('toastEl');
+  if(el) el.remove();
+  el = document.createElement('div');
+  el.id = 'toastEl'; el.className = 'toast ' + type;
+  el.innerHTML = `<div style="flex:1;">${escapeHtml(msg)}</div><button class="toast-close">&times;</button>`;
+  document.body.appendChild(el);
+  el.querySelector('.toast-close').addEventListener('click', ()=> el.remove());
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>{ if(el && el.parentElement) el.remove(); }, duration);
+}
+function customConfirm(message){
+  return new Promise(resolve=>{
+    document.getElementById('confirmMessage').textContent = message;
+    const overlay = document.getElementById('confirmOverlay');
+    overlay.classList.add('show');
+    const okBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    function cleanup(result){
+      overlay.classList.remove('show');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      resolve(result);
+    }
+    function onOk(){ cleanup(true); }
+    function onCancel(){ cleanup(false); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+  });
+}
+
+window.addEventListener('error', function(e){
+  console.error('页面错误:', e.error || e.message);
+  showToast('出现错误：' + (e.message || '未知错误'), 'error', 8000);
+});
+window.addEventListener('unhandledrejection', function(e){
+  console.error('未处理的错误:', e.reason);
+  const msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason);
+  showToast('出现错误：' + msg, 'error', 8000);
+});
+
+/* ---- API 封装 ---- */
+async function apiFetch(path, options){
+  options = options || {};
+  const headers = Object.assign({}, options.headers, { 'Authorization': 'Bearer ' + token });
+  if(options.body && typeof options.body !== 'string'){
+    headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.body);
+  }
+  const res = await fetch(API + path, Object.assign({}, options, { headers }));
+  if(res.status === 401){
+    logout();
+    throw new Error('登录已失效，请重新登录');
+  }
+  const contentType = res.headers.get('content-type') || '';
+  if(contentType.includes('application/json')){
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || '请求失败');
+    return data;
+  }
+  if(!res.ok) throw new Error('请求失败');
+  return res;
+}
+
+/* ---- 登录 ---- */
+document.getElementById('loginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const btn = document.getElementById('loginSubmitBtn');
+  btn.disabled = true; btn.textContent = '登录中…';
+  try{
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const res = await fetch(API + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || '登录失败', 'error'); return; }
+    token = data.token;
+    currentUser = { username: data.username, role: data.role };
+    localStorage.setItem('fy_token', token);
+    localStorage.setItem('fy_user', JSON.stringify(currentUser));
+    enterApp();
+  }catch(err){
+    showToast('登录失败：' + err.message, 'error');
+  }finally{
+    btn.disabled = false; btn.textContent = '登录';
+  }
+});
+
+function logout(){
+  token = null; currentUser = null;
+  localStorage.removeItem('fy_token');
+  localStorage.removeItem('fy_user');
+  document.getElementById('appView').style.display = 'none';
+  document.getElementById('loginView').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+}
+document.getElementById('logoutBtn').addEventListener('click', logout);
+
+function enterApp(){
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('appView').style.display = 'block';
+  document.getElementById('userPill').textContent = currentUser.username + (currentUser.role==='admin' ? '（管理员）' : '');
+  document.getElementById('adminBtn').style.display = currentUser.role === 'admin' ? 'inline-flex' : 'none';
+  loadData();
+}
+
+(function tryAutoLogin(){
+  const savedUser = localStorage.getItem('fy_user');
+  if(token && savedUser){
+    try{ currentUser = JSON.parse(savedUser); enterApp(); }catch(e){ logout(); }
+  }
+})();
+
+/* ---- 数据加载与保存 ---- */
+async function loadData(){
+  try{
+    const data = await apiFetch('/data');
+    properties = data.properties || [];
+    categories = data.categories || [];
+  }catch(e){
+    showToast('加载数据失败：' + e.message, 'error', 8000);
+    properties = []; categories = [];
+  }
+  document.getElementById('subtitle').textContent = properties.length + ' 套房源 · ' + categories.length + ' 个楼盘';
+  renderHome();
+}
+async function saveData(){
+  try{
+    await apiFetch('/data', { method:'PUT', body:{ categories, properties } });
+    return true;
+  }catch(e){
+    showToast('保存失败：' + e.message, 'error', 8000);
+    return false;
+  }
+}
+
+/* ---- 统计 ---- */
+function statsFor(list){
+  const total = list.length;
+  const rented = list.filter(p=>p.status==='rented').length;
+  const vacant = list.filter(p=>p.status==='vacant').length;
+  const maint = list.filter(p=>p.status==='maint').length;
+  const expiring = list.filter(p=>{
+    if((p.status!=='rented' && p.status!=='maint') || !p.contractEnd) return false;
+    const d = daysUntil(p.contractEnd);
+    return d !== null && d <= 30;
+  }).length;
+  return { total, rented, vacant, maint, expiring };
+}
+
+/* ---- 首页 ---- */
+function renderHome(){
+  const g = statsFor(properties);
+  document.getElementById('statTotal').textContent = g.total;
+  document.getElementById('statRented').textContent = g.rented;
+  document.getElementById('statVacant').textContent = g.vacant;
+  document.getElementById('statExpiring').textContent = g.expiring;
+
+  const wrap = document.getElementById('categoryBoxes');
+  if(categories.length === 0){
+    wrap.innerHTML = `<div class="empty"><h3>还没有楼盘</h3><p>先新增一个楼盘（比如 YOLO公寓），再往里面添加具体房源。</p><button class="btn btn-primary" onclick="document.getElementById('addCategoryBtn').click()">新增楼盘</button></div>`;
+    return;
+  }
+  const sorted = [...categories].sort((a,b)=>a.localeCompare(b,'zh'));
+  wrap.innerHTML = `<div class="category-boxes">` + sorted.map(cat=>{
+    const list = properties.filter(p=>p.category===cat);
+    const s = statsFor(list);
+    const breakdown = [];
+    if(s.rented) breakdown.push(`<span><span class="dot" style="background:var(--green)"></span>已出租 ${s.rented}</span>`);
+    if(s.vacant) breakdown.push(`<span><span class="dot" style="background:var(--red)"></span>空置 ${s.vacant}</span>`);
+    if(s.maint) breakdown.push(`<span><span class="dot" style="background:var(--ink-faint)"></span>维护中 ${s.maint}</span>`);
+    return `<div class="category-box" data-cat="${escapeHtml(cat)}">
+        <div class="cb-name">${escapeHtml(cat)}</div>
+        <div class="cb-count">${s.total} 套房源</div>
+        <div class="cb-breakdown">${breakdown.join('') || '<span>还没有房源</span>'}</div>
+        ${s.expiring ? `<div class="cb-warn">⚠ ${s.expiring} 套即将到期</div>` : ''}
+      </div>`;
+  }).join('') + `</div>`;
+  wrap.querySelectorAll('.category-box').forEach(el=> el.addEventListener('click', ()=> openCategory(el.dataset.cat)));
+}
+
+/* ---- 楼盘详情 ---- */
+function openCategory(name){
+  currentCategory = name;
+  currentFilter = 'all'; currentSearch = '';
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.filter-chip[data-filter="all"]').classList.add('active');
+  document.getElementById('catViewTitle').textContent = name;
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('categoryView').style.display = 'block';
+  renderCategoryView();
+}
+function backToHome(){
+  document.getElementById('categoryView').style.display = 'none';
+  document.getElementById('homeView').style.display = 'block';
+  currentCategory = null;
+  renderHome();
+}
+function matchesFilter(p){
+  if(currentFilter==='all') return true;
+  if(currentFilter==='expiring'){
+    if((p.status!=='rented' && p.status!=='maint') || !p.contractEnd) return false;
+    const d = daysUntil(p.contractEnd);
+    return d !== null && d <= 30;
+  }
+  return p.status === currentFilter;
+}
+function matchesSearch(p){
+  if(!currentSearch) return true;
+  const q = currentSearch.toLowerCase();
+  return (p.unit||'').toLowerCase().includes(q) || (p.ownerName||'').toLowerCase().includes(q) || (p.tenantName||'').toLowerCase().includes(q);
+}
+function expiryPillHtml(p){
+  if((p.status !== 'rented' && p.status !== 'maint') || !p.contractEnd) return '';
+  const d = daysUntil(p.contractEnd);
+  if(d === null) return '';
+  const label = p.status === 'maint' ? '预计完成' : '合同';
+  if(d < 0) return `<div class="expiry-pill over">已到期 ${Math.abs(d)} 天</div>`;
+  if(d <= 30) return `<div class="expiry-pill soon">${d} 天后到期，需要跟进</div>`;
+  return `<div class="expiry-pill ok">${label}至 ${p.contractEnd}</div>`;
+}
+
+function renderCategoryView(){
+  const inCat = properties.filter(p=>p.category===currentCategory);
+  const s = statsFor(inCat);
+  document.getElementById('catStatTotal').textContent = s.total;
+  document.getElementById('catStatRented').textContent = s.rented;
+  document.getElementById('catStatVacant').textContent = s.vacant;
+  document.getElementById('catStatExpiring').textContent = s.expiring;
+
+  const list = inCat.filter(matchesFilter).filter(matchesSearch).sort((a,b)=>{
+    const da = (a.status==='rented'||a.status==='maint') && a.contractEnd ? daysUntil(a.contractEnd) : 99999;
+    const db = (b.status==='rented'||b.status==='maint') && b.contractEnd ? daysUntil(b.contractEnd) : 99999;
+    return da - db;
+  });
+
+  const area = document.getElementById('gridArea');
+  if(inCat.length === 0){
+    area.innerHTML = `<div class="empty"><h3>这个楼盘还没有房源</h3><p>点击右上角"新增房源"，把这栋楼的房子信息录进来。</p><button class="btn btn-primary" onclick="document.getElementById('addBtn').click()">新增房源</button></div>`;
+    return;
+  }
+  if(list.length === 0){
+    area.innerHTML = `<div class="empty"><h3>没有符合条件的房源</h3><p>换个筛选条件或搜索词试试。</p></div>`;
+    return;
+  }
+  area.innerHTML = `<div class="grid">` + list.map(p=>{
+    const photo = p.coverPhoto ? `style="background-image:url('${p.coverPhoto}')"` : '';
+    const photoInner = p.coverPhoto ? '' : homeIconSvg();
+    return `<div class="card" data-id="${p.id}">
+        <div class="card-photo" ${photo}>${photoInner}</div>
+        <div class="card-body">
+          <div class="card-top"><div class="card-addr">${escapeHtml(p.unit)}</div><div class="tag ${STATUS_CLASS[p.status]}">${STATUS_LABEL[p.status]}</div></div>
+          <div class="card-rent"><b>${fmtMoney(p.rent)}</b> / 月</div>
+          <div class="card-row"><span>业主</span><span>${escapeHtml(p.ownerName)||'—'}</span></div>
+          ${p.status==='rented' ? `<div class="card-row"><span>租客</span><span>${escapeHtml(p.tenantName)||'—'}</span></div>` : ''}
+          ${expiryPillHtml(p)}
+        </div>
+      </div>`;
+  }).join('') + `</div>`;
+  document.querySelectorAll('.card').forEach(el=> el.addEventListener('click', ()=> openDetail(el.dataset.id)));
+}
+
+/* ---- 楼盘 新增/重命名/删除 ---- */
+const categoryFormOverlay = document.getElementById('categoryFormOverlay');
+function openCategoryModal(mode, oldName){
+  categoryModalMode = mode; categoryModalOldName = oldName || null;
+  document.getElementById('categoryFormTitle').textContent = mode === 'add' ? '新增楼盘' : '重命名楼盘';
+  document.getElementById('cf_name').value = mode === 'rename' ? oldName : '';
+  categoryFormOverlay.classList.add('show');
+  setTimeout(()=> document.getElementById('cf_name').focus(), 50);
+}
+function closeCategoryModal(){ categoryFormOverlay.classList.remove('show'); }
+document.getElementById('addCategoryBtn').addEventListener('click', ()=> openCategoryModal('add'));
+document.getElementById('renameCategoryBtn').addEventListener('click', ()=> openCategoryModal('rename', currentCategory));
+document.getElementById('categoryFormClose').addEventListener('click', closeCategoryModal);
+document.getElementById('categoryCancelBtn').addEventListener('click', closeCategoryModal);
+categoryFormOverlay.addEventListener('click', e=>{ if(e.target===categoryFormOverlay) closeCategoryModal(); });
+
+document.getElementById('categoryForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const name = document.getElementById('cf_name').value.trim();
+  if(!name){ showToast('请输入楼盘名称', 'error'); return; }
+
+  if(categoryModalMode === 'add'){
+    if(categories.includes(name)){ showToast('该楼盘已经存在了。', 'error'); return; }
+    categories.push(name);
+    const ok = await saveData();
+    if(!ok){ categories.pop(); return; }
+    showToast('楼盘已创建', 'success', 2000);
+    closeCategoryModal();
+    openCategory(name);
+  }else{
+    if(name === categoryModalOldName){ closeCategoryModal(); return; }
+    if(categories.includes(name)){ showToast('已经有一个同名的楼盘了。', 'error'); return; }
+    const prevCategories = [...categories], prevProps = properties.map(p=>({...p}));
+    categories = categories.map(c => c === categoryModalOldName ? name : c);
+    properties.forEach(p=>{ if(p.category === categoryModalOldName) p.category = name; });
+    const ok = await saveData();
+    if(!ok){ categories = prevCategories; properties = prevProps; return; }
+    currentCategory = name;
+    document.getElementById('catViewTitle').textContent = name;
+    showToast('已重命名', 'success', 2000);
+    closeCategoryModal();
+    renderCategoryView();
+  }
+});
+
+document.getElementById('deleteCategoryBtn').addEventListener('click', async ()=>{
+  const inCat = properties.filter(p=>p.category===currentCategory);
+  const msg = inCat.length > 0
+    ? `该楼盘下还有 ${inCat.length} 套房源，删除楼盘将同时删除这些房源的所有记录和照片，此操作无法撤销，确定要删除吗？`
+    : `确定要删除楼盘"${currentCategory}"吗？`;
+  const confirmed = await customConfirm(msg);
+  if(!confirmed) return;
+
+  for(const p of inCat){
+    for(const fid of (p.photoIds||[])){
+      try{ await apiFetch('/photo?fileId=' + encodeURIComponent(fid), { method:'DELETE' }); }catch(e){}
+    }
+  }
+  properties = properties.filter(p=>p.category!==currentCategory);
+  categories = categories.filter(c=>c!==currentCategory);
+  await saveData();
+  showToast('楼盘已删除', 'success', 2000);
+  backToHome();
+});
+document.getElementById('backToHomeBtn').addEventListener('click', backToHome);
+
+/* ---- 表单弹窗（新增/编辑房源） ---- */
+const formOverlay = document.getElementById('formOverlay');
+const detailOverlay = document.getElementById('detailOverlay');
+
+async function openForm(prop){
+  editingPhotoIds = prop && prop.photoIds ? [...prop.photoIds] : [];
+  document.getElementById('formTitle').textContent = prop ? '编辑房源' : '新增房源';
+  document.getElementById('formCategoryLabel').textContent = prop ? prop.category : currentCategory;
+  document.getElementById('propId').value = prop ? prop.id : '';
+  document.getElementById('f_unit').value = prop ? prop.unit||'' : '';
+  document.getElementById('f_ownerName').value = prop ? prop.ownerName||'' : '';
+  document.getElementById('f_ownerPhone').value = prop ? prop.ownerPhone||'' : '';
+  document.getElementById('f_rent').value = prop ? (prop.rent ?? '') : '';
+  document.getElementById('f_status').value = prop ? prop.status : 'vacant';
+  document.getElementById('f_tenantName').value = prop ? prop.tenantName||'' : '';
+  document.getElementById('f_tenantPhone').value = prop ? prop.tenantPhone||'' : '';
+  document.getElementById('f_contractEnd').value = prop ? prop.contractEnd||'' : '';
+  document.getElementById('f_notes').value = prop ? prop.notes||'' : '';
+  document.getElementById('deleteBtn').style.display = prop ? 'inline-flex' : 'none';
+  toggleContractFields();
+  renderPhotoThumbsLoading();
+  formOverlay.classList.add('show');
+  await renderPhotoThumbs();
+}
+function closeForm(){ formOverlay.classList.remove('show'); }
+function toggleContractFields(){
+  const v = document.getElementById('f_status').value;
+  document.getElementById('contractFields').style.display = (v==='rented'||v==='maint') ? 'contents' : 'none';
+}
+
+function renderPhotoThumbsLoading(){
+  document.getElementById('photoThumbs').innerHTML = editingPhotoIds.length
+    ? editingPhotoIds.map(()=> `<div class="photo-thumb"></div>`).join('') : '';
+}
+async function renderPhotoThumbs(){
+  const wrap = document.getElementById('photoThumbs');
+  const ids = [...editingPhotoIds];
+  const urls = await Promise.all(ids.map(fid => getPhotoBlobUrl(fid)));
+  wrap.innerHTML = ids.map((fid,i)=>`
+    <div class="photo-thumb" style="background-image:url('${urls[i]||''}')">
+      <button type="button" class="rm" data-i="${i}">&times;</button>
+    </div>`).join('');
+  wrap.querySelectorAll('.rm').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      editingPhotoIds.splice(Number(btn.dataset.i),1);
+      renderPhotoThumbs();
+    });
+  });
+}
+
+const photoBlobCache = {};
+async function getPhotoBlobUrl(fileId){
+  if(photoBlobCache[fileId]) return photoBlobCache[fileId];
+  try{
+    const res = await apiFetch('/photo?fileId=' + encodeURIComponent(fileId));
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    photoBlobCache[fileId] = url;
+    return url;
+  }catch(e){ return ''; }
+}
+
+function compressImage(file, maxDim, quality){
+  maxDim = maxDim || 1100; quality = quality || 0.7;
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let { width, height } = img;
+        if(width > height && width > maxDim){ height = Math.round(height*(maxDim/width)); width = maxDim; }
+        else if(height > maxDim){ width = Math.round(width*(maxDim/height)); height = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function shrinkForCover(dataUrl, maxDim, quality){
+  maxDim = maxDim || 260; quality = quality || 0.5;
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let { width, height } = img;
+      if(width > height && width > maxDim){ height = Math.round(height*(maxDim/width)); width = maxDim; }
+      else if(height > maxDim){ width = Math.round(width*(maxDim/height)); height = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+document.getElementById('uploadPhotoBtn').addEventListener('click', ()=> document.getElementById('f_photoFile').click());
+document.getElementById('f_photoFile').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  const statusEl = document.getElementById('uploadStatus');
+  let done = 0;
+  statusEl.textContent = `上传中 0/${files.length}`;
+  for(const file of files){
+    try{
+      const dataUrl = await compressImage(file);
+      const base64 = dataUrl.split(',')[1];
+      const res = await apiFetch('/photo', { method:'POST', body:{ filename: file.name, mimeType:'image/jpeg', base64 } });
+      editingPhotoIds.push(res.fileId);
+      photoBlobCache[res.fileId] = dataUrl;
+      await renderPhotoThumbs();
+    }catch(err){
+      console.error(err);
+      showToast('照片上传失败：' + err.message, 'error');
+    }
+    done++;
+    statusEl.textContent = `上传中 ${done}/${files.length}`;
+  }
+  statusEl.textContent = `已上传 ${files.length} 张照片`;
+  setTimeout(()=>{ statusEl.textContent=''; }, 2500);
+  e.target.value = '';
+});
+
+document.getElementById('addBtn').addEventListener('click', ()=> openForm(null));
+document.getElementById('formClose').addEventListener('click', closeForm);
+document.getElementById('cancelBtn').addEventListener('click', closeForm);
+formOverlay.addEventListener('click', e=>{ if(e.target === formOverlay) closeForm(); });
+
+document.getElementById('propForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true; submitBtn.textContent = '保存中…';
+  try{
+    const existingId = document.getElementById('propId').value;
+    const id = existingId || uid();
+    const existingProp = existingId ? properties.find(p=>p.id===existingId) : null;
+    const catForSave = existingProp ? existingProp.category : currentCategory;
+
+    const unit = document.getElementById('f_unit').value.trim();
+    if(!unit){ showToast('请填写房源编号', 'error'); return; }
+
+    let coverPhoto = existingProp ? existingProp.coverPhoto : null;
+    if(editingPhotoIds.length > 0){
+      const firstUrl = await getPhotoBlobUrl(editingPhotoIds[0]);
+      if(firstUrl){
+        try{
+          const blob = await (await fetch(firstUrl)).blob();
+          const dataUrl = await new Promise(res=>{ const r = new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(blob); });
+          coverPhoto = await shrinkForCover(dataUrl);
+        }catch(err){ /* 用旧封面兜底 */ }
+      }
+    }else{
+      coverPhoto = null;
+    }
+
+    const data = {
+      id, category: catForSave, unit,
+      ownerName: document.getElementById('f_ownerName').value.trim(),
+      ownerPhone: document.getElementById('f_ownerPhone').value.trim(),
+      rent: document.getElementById('f_rent').value ? Number(document.getElementById('f_rent').value) : null,
+      status: document.getElementById('f_status').value,
+      tenantName: document.getElementById('f_tenantName').value.trim(),
+      tenantPhone: document.getElementById('f_tenantPhone').value.trim(),
+      contractEnd: (document.getElementById('f_status').value === 'rented' || document.getElementById('f_status').value === 'maint') ? document.getElementById('f_contractEnd').value : '',
+      notes: document.getElementById('f_notes').value.trim(),
+      coverPhoto,
+      photoIds: [...editingPhotoIds],
+    };
+
+    if(existingId){
+      const idx = properties.findIndex(p=>p.id===existingId);
+      if(idx>-1) properties[idx] = data;
+    }else{
+      properties.push(data);
+    }
+    const ok = await saveData();
+    if(!ok) return;
+    showToast('已保存', 'success', 2000);
+    closeForm();
+    renderCategoryView();
+  }finally{
+    submitBtn.disabled = false; submitBtn.textContent = '保存';
+  }
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('propId').value;
+  if(!id) return;
+  const confirmed = await customConfirm('确定要删除这个房源吗？此操作无法撤销。');
+  if(!confirmed) return;
+  const prop = properties.find(p=>p.id===id);
+  properties = properties.filter(p=>p.id!==id);
+  await saveData();
+  for(const fid of (prop && prop.photoIds) || []){
+    try{ await apiFetch('/photo?fileId=' + encodeURIComponent(fid), { method:'DELETE' }); }catch(e){}
+  }
+  showToast('房源已删除', 'success', 2000);
+  closeForm();
+  renderCategoryView();
+});
+
+/* ---- 详情 ---- */
+async function openDetail(id){
+  const p = properties.find(x=>x.id===id);
+  if(!p) return;
+  detailViewingId = id;
+  document.getElementById('detailAddr').textContent = `${p.category} · ${p.unit}`;
+  document.getElementById('detailPhotos').innerHTML = (p.photoIds && p.photoIds.length) ? '<span style="font-size:13px;color:var(--ink-soft);">照片加载中…</span>' : '';
+
+  const items = [
+    ['状态', STATUS_LABEL[p.status]], ['月租金', fmtMoney(p.rent)],
+    ['业主姓名', p.ownerName||'—'], ['业主电话', p.ownerPhone||'—'],
+  ];
+  if(p.status === 'rented'){
+    items.push(['租客姓名', p.tenantName||'—']); items.push(['租客电话', p.tenantPhone||'—']); items.push(['结束日期', p.contractEnd||'—']);
+  }else if(p.status === 'maint'){
+    items.push(['结束日期', p.contractEnd||'—']);
+  }
+  document.getElementById('detailGrid').innerHTML = items.map(([k,v])=>`<div class="detail-item"><div class="k">${k}</div><div class="v">${escapeHtml(v)}</div></div>`).join('');
+  document.getElementById('detailExpiry').innerHTML = expiryPillHtml(p);
+  document.getElementById('detailNotesWrap').innerHTML = p.notes ? `<div class="detail-notes">${escapeHtml(p.notes)}</div>` : '';
+  detailOverlay.classList.add('show');
+
+  if(p.photoIds && p.photoIds.length){
+    const urls = await Promise.all(p.photoIds.map(fid=>getPhotoBlobUrl(fid)));
+    document.getElementById('detailPhotos').innerHTML = urls.filter(Boolean).map(u=>`<img src="${u}" alt="房屋照片">`).join('');
+  }
+}
+document.getElementById('detailClose').addEventListener('click', ()=> detailOverlay.classList.remove('show'));
+detailOverlay.addEventListener('click', e=>{ if(e.target===detailOverlay) detailOverlay.classList.remove('show'); });
+document.getElementById('detailEditBtn').addEventListener('click', ()=>{
+  detailOverlay.classList.remove('show');
+  const p = properties.find(x=>x.id===detailViewingId);
+  openForm(p);
+});
+
+/* ---- 筛选与搜索 ---- */
+document.getElementById('filterChips').addEventListener('click', e=>{
+  const btn = e.target.closest('.filter-chip');
+  if(!btn) return;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  renderCategoryView();
+});
+document.getElementById('searchInput').addEventListener('input', e=>{
+  currentSearch = e.target.value.trim();
+  renderCategoryView();
+});
+document.getElementById('f_status').addEventListener('change', ()=>{
+  toggleContractFields();
+  const s = document.getElementById('f_status').value;
+  if(s !== 'rented' && s !== 'maint') document.getElementById('f_contractEnd').value = '';
+});
+
+/* ---- 账号管理 ---- */
+const adminOverlay = document.getElementById('adminOverlay');
+document.getElementById('adminBtn').addEventListener('click', async ()=>{
+  adminOverlay.classList.add('show');
+  await loadUsersList();
+});
+document.getElementById('adminClose').addEventListener('click', ()=> adminOverlay.classList.remove('show'));
+adminOverlay.addEventListener('click', e=>{ if(e.target===adminOverlay) adminOverlay.classList.remove('show'); });
+
+async function loadUsersList(){
+  const wrap = document.getElementById('usersList');
+  wrap.innerHTML = '加载中…';
+  try{
+    const users = await apiFetch('/users');
+    wrap.innerHTML = users.map(u=>`
+      <div class="u-row">
+        <span>${escapeHtml(u.username)}<span class="u-role">${u.role==='admin'?'管理员':'成员'}</span></span>
+        <button class="btn btn-ghost" data-id="${u.id}" style="padding:5px 10px;font-size:12px;">删除</button>
+      </div>`).join('') || '<div class="u-row">还没有其他账号</div>';
+    wrap.querySelectorAll('button[data-id]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const confirmed = await customConfirm('确定要删除这个账号吗？');
+        if(!confirmed) return;
+        try{
+          await apiFetch('/users', { method:'DELETE', body:{ id: btn.dataset.id } });
+          showToast('账号已删除', 'success', 2000);
+          loadUsersList();
+        }catch(err){ showToast(err.message, 'error'); }
+      });
+    });
+  }catch(e){
+    wrap.innerHTML = '加载失败：' + escapeHtml(e.message);
+  }
+}
+document.getElementById('addUserForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const username = document.getElementById('nu_username').value.trim();
+  const password = document.getElementById('nu_password').value;
+  const role = document.getElementById('nu_role').value;
+  if(!username || !password){ showToast('请填写账号和密码', 'error'); return; }
+  try{
+    await apiFetch('/users', { method:'POST', body:{ username, password, role } });
+    showToast('账号已添加', 'success', 2000);
+    document.getElementById('nu_username').value = '';
+    document.getElementById('nu_password').value = '';
+    loadUsersList();
+  }catch(err){ showToast(err.message, 'error'); }
+});
+</script>
+</body>
+</html>
