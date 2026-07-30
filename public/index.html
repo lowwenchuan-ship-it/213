@@ -303,7 +303,7 @@
         </div>
         <div class="field"><label>业主姓名</label><input type="text" id="f_ownerName"></div>
         <div class="field"><label>业主电话</label><input type="text" id="f_ownerPhone"></div>
-        <div class="field"><label>月租金（RM）</label><input type="number" id="f_rent" min="0"></div>
+        <div class="field"><label>月租金（元）</label><input type="number" id="f_rent" min="0"></div>
         <div class="field"><label>租客姓名</label><input type="text" id="f_tenantName"></div>
         <div class="field"><label>租客电话</label><input type="text" id="f_tenantPhone"></div>
         <div id="contractFields" style="display:contents;">
@@ -401,7 +401,7 @@ function daysUntil(dateStr){
   const end = new Date(dateStr); end.setHours(0,0,0,0);
   return Math.round((end - today) / 86400000);
 }
-function fmtMoney(n){ if(n===undefined||n===null||n==='') return '未填写'; return 'RM' + Number(n).toLocaleString('en-MY'); }
+function fmtMoney(n){ if(n===undefined||n===null||n==='') return '未填写'; return '¥' + Number(n).toLocaleString('zh-CN'); }
 function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function homeIconSvg(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg>`; }
 
