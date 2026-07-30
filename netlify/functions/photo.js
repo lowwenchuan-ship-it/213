@@ -1,5 +1,5 @@
 const { Readable } = require('stream');
-const { getDriveClient } = require('./lib/drive');
+const { getDriveClient, findOrCreateFolder } = require('./lib/drive');
 const { requireAuth, json } = require('./lib/auth');
 
 exports.handler = async (event) => {
@@ -11,11 +11,19 @@ exports.handler = async (event) => {
 
   try {
     if (event.httpMethod === 'POST') {
-      const { filename, mimeType, base64 } = JSON.parse(event.body || '{}');
+      const { filename, mimeType, base64, category, unit } = JSON.parse(event.body || '{}');
       if (!base64) return json(400, { error: '缺少图片内容' });
+
+      let targetFolderId = folderId;
+      if (category) {
+        const catFolderId = await findOrCreateFolder(drive, category, folderId);
+        const unitFolderName = unit && unit.trim() ? unit.trim() : '未命名房源';
+        targetFolderId = await findOrCreateFolder(drive, unitFolderName, catFolderId);
+      }
+
       const buffer = Buffer.from(base64, 'base64');
       const res = await drive.files.create({
-        requestBody: { name: filename || 'photo_' + Date.now() + '.jpg', parents: [folderId] },
+        requestBody: { name: filename || 'photo_' + Date.now() + '.jpg', parents: [targetFolderId] },
         media: { mimeType: mimeType || 'image/jpeg', body: Readable.from(buffer) },
         fields: 'id',
       });
