@@ -1,17 +1,15 @@
 const { google } = require('googleapis');
 
 function getDriveClient() {
-  let credentials;
-  try {
-    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
-  } catch (e) {
-    throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY 环境变量不是有效的 JSON，请检查粘贴内容');
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REFRESH_TOKEN) {
+    throw new Error('缺少 GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / GOOGLE_REFRESH_TOKEN 环境变量');
   }
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/drive'],
-  });
-  return google.drive({ version: 'v3', auth });
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+  );
+  oauth2Client.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
+  return google.drive({ version: 'v3', auth: oauth2Client });
 }
 
 async function findFileByName(drive, name, folderId) {
