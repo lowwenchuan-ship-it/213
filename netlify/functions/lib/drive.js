@@ -12,6 +12,30 @@ function getDriveClient() {
   return google.drive({ version: 'v3', auth: oauth2Client });
 }
 
+async function findFolderByName(drive, name, parentId) {
+  const safeName = name.replace(/'/g, "\\'");
+  const res = await drive.files.list({
+    q: `'${parentId}' in parents and name='${safeName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: 'files(id, name)',
+    spaces: 'drive',
+  });
+  return res.data.files && res.data.files[0];
+}
+
+async function findOrCreateFolder(drive, name, parentId) {
+  const existing = await findFolderByName(drive, name, parentId);
+  if (existing) return existing.id;
+  const res = await drive.files.create({
+    requestBody: {
+      name,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [parentId],
+    },
+    fields: 'id',
+  });
+  return res.data.id;
+}
+
 async function findFileByName(drive, name, folderId) {
   const safeName = name.replace(/'/g, "\\'");
   const res = await drive.files.list({
@@ -49,4 +73,4 @@ async function writeJsonFile(drive, name, folderId, data) {
   }
 }
 
-module.exports = { getDriveClient, findFileByName, readJsonFile, writeJsonFile };
+module.exports = { getDriveClient, findFileByName, readJsonFile, writeJsonFile, findOrCreateFolder };
